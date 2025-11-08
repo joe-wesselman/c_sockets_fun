@@ -1,7 +1,7 @@
 import sys, socket 
 
 host = "127.0.0.1"
-port = 5000
+port = 5050
 
 with socket.create_connection((host, port)) as s:
     print(f"connected to {host}:{port}. Type lines, cntrl + c to quit")
