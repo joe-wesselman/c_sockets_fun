@@ -10,5 +10,5 @@ void send_file(int client_df, const char *filepath);
 void send_not_found(int client_fd);
 void send_bad_request(int client_fd);
 void send_internal_error(int client_fd);
-
+void send_static_file(int client_fd, const char *path);
 #endif

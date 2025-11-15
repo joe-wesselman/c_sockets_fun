@@ -5,18 +5,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-
-// static const char *get_mime_type(const char *fname){
-//     const char *extenstion = strrchr(fname, '.');
-//     if(!extenstion) return "text/plain";
-//     if (strcmp(extenstion, ".html") == 0) return "text/html";
-//     if (strcmp(extenstion, ".css")  == 0) return "text/css";
-//     if (strcmp(extenstion, ".js")   == 0) return "application/javascript";
-//     if (strcmp(extenstion, ".png")  == 0) return "image/png";
-//     if (strcmp(extenstion, ".jpg")  == 0 || strcmp(extenstion, ".jpeg") == 0) return "image/jpeg";
-//     if (strcmp(extenstion, ".json") == 0) return "application/json";
-//     return "application/octet-stream";
-// }
+#include "helpers.h"
 
 void send_response(int client_fd, const char *status, const char *mimetype, const char* body){
     size_t body_len = body ? strlen(body) : 0;
@@ -83,4 +72,27 @@ void send_internal_error(int client_fd){
     if (body_len > 0){
         send(client_fd, body, body_len, 0);
     }
+}
+
+void send_static_file(int client_fd, const char *path){
+    size_t filesize;
+    const char *prefix =".";
+    int needed_space = snprintf(NULL, 0, "%s%s", prefix, path);
+    char *normalizedpath = malloc(needed_space + 1);
+    if(!normalizedpath){ perror("malloc error"); exit(1);}
+    if(!(strncmp(path, ".", 1) == 0)){
+        snprintf(normalizedpath, needed_space + 1, "%s%s", prefix, path);
+    }
+    else{
+        snprintf(normalizedpath, needed_space, "%s", path);
+    }
+    const char *mimetype = get_mime_type(normalizedpath);
+    char *filecontent = read_file(normalizedpath, &filesize);
+    if(!filecontent){
+        send_not_found(client_fd);
+    }
+    else{
+        send_response(client_fd, "200", mimetype, filecontent);
+    }
+    free(normalizedpath);
 }

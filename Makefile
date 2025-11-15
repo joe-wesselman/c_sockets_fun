@@ -1,6 +1,16 @@
 CC := gcc
-CFLAGS := -Wall -Iinclude -Werror -g
-TARGET := basic_server.exe
+
+
+DEBUG ?= 0
+
+ifeq ($(DEBUG),1)
+	CFLAGS := -Wall -Iinclude -Werror -g -O0
+	TARGET := basic_server_debug.exe
+else
+	CFLAGS := -Wall -Iinclude -Werror -O2
+	TARGET := basic_server.exe
+endif
+
 SRC_DIR:=src
 OBJ_DIR := build
 
@@ -22,6 +32,6 @@ $(OBJ_DIR):
 	mkdir -p $@
 
 clean:
-	rm -f $(OBJ_DIR) $(TARGET)
+	rm -f $(OBJ_DIR) *.exe
 
 # .PHONY: all clean

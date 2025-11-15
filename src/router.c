@@ -22,13 +22,26 @@ void router_register(const char *path, RouteHandler handler){
     route_count++;
 }
 
-int router_dispatch(int client_fd, const HttpRequest *req){
+RouteHandler get_handler(const char *path){
     for(int i = 0; i < route_count; i++){
-        if(strcmp(routes[i].path,req->path) == 0){
-            routes[i].handler(client_fd, req);
-            return 0;
+        if(strcmp(routes[i].path, path) == 0){
+            return routes[i].handler;
         }
     }
-    send_not_found(client_fd);
+    return NULL;
+}
+
+int router_dispatch(int client_fd, const HttpRequest *req){
+    RouteHandler handler = get_handler(req->path);
+    if(handler){
+        handler(client_fd, req);
+    }
+    else if (strncmp(req->path, "/assets/", 8) == 0){
+        // meaning we have a request for some asset
+        send_static_file(client_fd, req->path);
+    }
+    else{
+        send_not_found(client_fd);
+    }
     return 0;
 }

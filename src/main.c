@@ -12,47 +12,26 @@
 #include "router.h"
 #include "server.h"
 #include "response.h"
+#include "helpers.h"
 
 #define BUFF_SIZE 4096
 #define PORT 5050
 #define BACKLOG 16
 
-char *read_file(const char *fname, size_t *out_size)
-{
-    FILE *fp = fopen(fname, "rb");
-    if (!fp)
-    {
-        perror("fopen");
-        return NULL;
-    }
 
-    fseek(fp, 0, SEEK_END);
-    long len = ftell(fp);
-    rewind(fp);
-
-    char *buffer = malloc((size_t)len + 1);
-    if (!buffer)
-    {
-        perror("malloc failure");
-        fclose(fp);
-        return NULL;
-    }
-    size_t n = fread(buffer, 1, (size_t)len, fp);
-    buffer[n] = '\0'; // terminate str
-    fclose(fp);
-    return buffer;
-}
 
 void handle_root(int fd, const HttpRequest *req){
-    size_t simplehtmlsize;
-    char *simplehtml = read_file("assets/simple.html", &simplehtmlsize);
-    send_response(fd, "200", "text/html", simplehtml);
+    size_t homehtmlsize;
+    const char *filename = "assets/html/home.html";
+    char *homehtml = read_file(filename, &homehtmlsize);
+    send_response(fd, "200", get_mime_type(filename), homehtml);
 }
 
 void handle_ping(int fd, const HttpRequest *req){
     size_t pongsize;
-    char *pongres = read_file("assets/pong.html", &pongsize);
-    send_response(fd, "200", "text/html", pongres);
+    const char *filename = "assets/html/pong.html";
+    char *pongres = read_file(filename, &pongsize);
+    send_response(fd, "200", get_mime_type(filename), pongres);
 }
 
 int main(int argc, char **argv)
